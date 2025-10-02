@@ -55,6 +55,9 @@ const userSchema = new Schema<UserProps, IUserModel, IUserMethods>(
 userSchema.index({ usernameLower: 1 }, { unique: true });
 userSchema.index({ displayName: 1, createdAt: -1 });
 
+userSchema.index({ role: 1, companyId: 1, usernameLower: 1 });
+userSchema.index({ role: 1, companyId: 1, email: 1 });
+
 userSchema.pre("validate", function (this: UserDocument, next) {
   if (this.isModified("username")) {
     if (!this.username) {

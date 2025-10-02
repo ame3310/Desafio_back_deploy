@@ -23,7 +23,6 @@ import type {
 } from "@modules/auth/auth.types";
 import type { PublicUser, UserDocument } from "@modules/users/user.types";
 
-/* ------------------------------------------------------------------ */
 type Tokens = { accessToken: string; refreshToken: string };
 type Meta = { userAgent?: string; ip?: string };
 type AuthResult = { user: PublicUser } & Tokens;
@@ -87,6 +86,7 @@ export async function register(
   opts?: RegisterOpts
 ): Promise<AuthResult> {
   const normalizedEmail = normalizeEmail(email);
+
   const [emailTaken, usernameTaken] = await Promise.all([
     User.findOne({ email: normalizedEmail }),
     User.findOne({ usernameLower: username.trim().toLowerCase() }),
@@ -127,7 +127,6 @@ export async function register(
     role = "manager";
     companyId = inv.companyId;
   }
-
   else if (opts?.companyId) {
     const company = await Company.findById(opts.companyId).select("_id").lean();
     if (!company)
@@ -144,6 +143,7 @@ export async function register(
     companyId, 
   });
 
+  // mantener relación manager<->company
   if (role === "manager" && companyId) {
     await Company.findByIdAndUpdate(companyId, {
       $addToSet: { managerIds: user.id },
@@ -153,8 +153,6 @@ export async function register(
   const tokens = await issueTokens(user);
   return { user: toPublicUser(user), ...tokens };
 }
-
-/* ===================== LOGIN / REFRESH / LOGOUT ===================== */
 
 export async function login(
   email: string,

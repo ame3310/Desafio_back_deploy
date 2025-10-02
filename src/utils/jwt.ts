@@ -22,7 +22,10 @@ function parseExpiresToSeconds(value: string | number): number {
   if (/^\d+$/.test(value)) return Number(value);
   const millis = ms(value as MsStringValue);
   if (typeof millis !== "number") {
-    throw ApiError.badRequest(`Invalid EXPIRES_IN value: '${value}'`, ERR.COMMON.INVALID_PAYLOAD);
+    throw ApiError.badRequest(
+      `Invalid EXPIRES_IN value: '${value}'`,
+      ERR.COMMON.INVALID_PAYLOAD
+    );
   }
   return Math.floor(millis / 1000);
 }

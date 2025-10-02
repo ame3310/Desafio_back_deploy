@@ -2,7 +2,7 @@ import { ocrApi } from "@modules/ocr/ocr.api.client";
 import FormData from "form-data";
 import type { ReadStream } from "fs";
 
-type OcrOk = unknown; // si la API devuelve string, lo parseamos a JSON si aplica
+type OcrOk = unknown; 
 
 async function postFile(
   endpoint: string,

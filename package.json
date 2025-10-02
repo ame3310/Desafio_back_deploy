@@ -5,6 +5,8 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
+    "backfill": "ts-node --transpile-only src/read-models/scripts/backfill-overview.ts",
+    "fix:numbers": "ts-node -r tsconfig-paths/register --transpile-only src/read-models/scripts/fix-ticket-numbers.ts",
     "build": "tsc -p tsconfig.json",
     "prestart": "npm run build",
     "start": "node -r tsconfig-paths/register dist/server.js",
@@ -41,10 +43,11 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/ms": "^2.1.0",
-    "@types/node": "^24.5.2",
+    "@types/node": "^24.6.2",
     "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.3"
   }
 }

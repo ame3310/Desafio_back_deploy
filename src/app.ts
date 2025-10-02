@@ -10,16 +10,18 @@ import cors, { type CorsOptions } from "cors";
 import authRoutes from "@modules/auth/auth.routes";
 import userRoutes from "@modules/users/user.routes";
 import companyRoutes from "@modules/company/company.routes";
-import userOverviewRoutes from "@modules/reports/routes/user.overview.routes";
-import managerOverviewRoutes from "@modules/reports/routes/manager.overview.routes";
 import {
   managerInvitationAdminRouter,
   managerInvitationPublicRouter,
 } from "@modules/invitations/invitation.routes";
+import userOverviewRoutes from "@modules/overviews/routes/user.overview.routes";
+import managerOverviewRoutes from "@modules/overviews/routes/manager.overview.routes";
+import managerWorkersRoutes from "@modules/overviews/routes/manager.worker.routes";
 
 import { requireAuth } from "@middlewares/requireAuth.middleware";
 import { requireRole } from "@middlewares/requireRole.middleware";
 import ticketRoutes from "@modules/tickets/ticket.routes";
+import vehicleRoutes from "@modules/vehicles/vehicle.routes";
 
 const app: Application = express();
 
@@ -61,18 +63,20 @@ app.use("/auth", authRoutes);
 
 app.use("/users", requireAuth, userRoutes);
 
+app.use("/vehicles", vehicleRoutes);
+
 app.use("/companies", requireAuth, companyRoutes);
 
 app.use("/tickets", requireAuth, ticketRoutes);
 
-app.use("/reports/me", requireAuth, userOverviewRoutes);
-
+app.use("/overviews", requireAuth, userOverviewRoutes);
 app.use(
-  "/reports/manager",
+  "/overviews",
   requireAuth,
   requireRole("manager"),
   managerOverviewRoutes
 );
+app.use("/manager", requireAuth, requireRole("manager"), managerWorkersRoutes);
 
 app.use(
   "/admin",

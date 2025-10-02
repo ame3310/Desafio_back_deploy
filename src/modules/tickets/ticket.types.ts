@@ -7,6 +7,7 @@ export interface BaseTicketProps {
   domain: TicketDomain;
   userId: Types.ObjectId;
   companyId?: Types.ObjectId | null;
+  empresaNombre?: string | null;
   fecha: Date;
   idPropioTicket?: string | null;
   source?: string;
@@ -21,15 +22,29 @@ export interface FuelTicketProps extends BaseTicketProps {
   total?: number;
   metodoPago?: string;
   estacion?: { nombre?: string; provincia?: string } | null;
-  lineas?: Array<{ producto?: string; litros?: number; precioPorLitro?: number; importe?: number }>;
+  lineas?: Array<{
+    producto?: string;
+    litros?: number;
+    precioPorLitro?: number;
+    importe?: number;
+  }>;
 }
 
 export interface EvTicketProps extends BaseTicketProps {
   domain: "ev";
   total?: number;
   metodoPago?: string;
-  estacion?: { provincia?: string; potenciaMaxKW?: number; tarifa?: string } | null;
-  lineas?: Array<{ producto?: string; kwh?: number; precio_kwh?: number; importe?: number }>;
+  estacion?: {
+    provincia?: string;
+    potenciaMaxKW?: number;
+    tarifa?: string;
+  } | null;
+  lineas?: Array<{
+    producto?: string;
+    kwh?: number;
+    precio_kwh?: number;
+    importe?: number;
+  }>;
 }
 
 export interface TollTicketProps extends BaseTicketProps {

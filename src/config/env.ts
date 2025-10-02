@@ -1,4 +1,4 @@
-import "dotenv/config";                  // carga .env (en la raíz del proyecto)
+import "dotenv/config";
 import { z } from "zod";
 
 const envSchema = z.object({
@@ -25,7 +25,10 @@ const envSchema = z.object({
 
 const parsed = envSchema.safeParse(process.env);
 if (!parsed.success) {
-  console.error("Error en variables de entorno:", parsed.error.flatten().fieldErrors);
+  console.error(
+    "Error en variables de entorno:",
+    parsed.error.flatten().fieldErrors
+  );
   process.exit(1);
 }
 export const env = parsed.data;

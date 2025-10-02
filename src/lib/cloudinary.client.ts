@@ -2,7 +2,6 @@ import { ERR } from "@shared/constants/error.constants";
 import { ApiError } from "@shared/errors/apiError";
 import { v2 as cloudinary, UploadApiResponse } from "cloudinary";
 
-// Permite configurar por CLOUDINARY_URL o por las 3 variables sueltas
 if (process.env.CLOUDINARY_URL) {
   cloudinary.config({ cloudinary_url: process.env.CLOUDINARY_URL });
 } else if (

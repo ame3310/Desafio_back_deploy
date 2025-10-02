@@ -9,7 +9,7 @@ import { ERR } from "@shared/constants/error.constants";
 export const createInvitation: RequestHandler = async (req, res, next) => {
   try {
     const { companyId } = req.params;
-    const out = await createManagerInvitation(req.user!.id, { companyId });
+    const out = await createManagerInvitation({ companyId });
     res.status(201).json({ ...out, companyId });
   } catch (e) {
     next(e);
