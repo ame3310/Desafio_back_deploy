@@ -1,3 +1,5 @@
-import type { AccessJwtPayload } from "@modules/auth/auth.types";
-
-export type RequestUser = Pick<AccessJwtPayload, "id" | "role">;
+export type RequestUser = {
+  id: string;
+  role: "user" | "manager" | "admin";
+  companyId?: string;
+};

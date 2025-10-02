@@ -7,9 +7,24 @@ import type { PublicUser } from "@modules/users/user.types";
 export async function getById(id: string): Promise<PublicUser> {
   const user = await User.findById(id);
   if (!user)
-    //adaptar funcionalidad para que los managers solo puedan encontrar resultados dentro de su plantilla
     throw ApiError.notFound("Usuario no encontrado", ERR.USER.NOT_FOUND);
   return toPublicUser(user);
+}
+
+export async function assertManagerCanActOnUser(
+  managerCompanyId: string,
+  targetUserId: string
+): Promise<void> {
+  const target = await User.findById(targetUserId).select("companyId").lean();
+  if (!target || target.companyId !== managerCompanyId) {
+    throw ApiError.forbidden("No permitido", ERR.COMMON.FORBIDDEN);
+  }
+}
+
+export async function listEmployeesOfCompany(companyId: string) {
+  return User.find({ companyId })
+    .select("_id email username role companyId")
+    .lean();
 }
 
 export async function updateMe(

@@ -1,4 +1,4 @@
-import { env } from "@config/example.env";
+import { env } from "@config/env";
 import { ERR } from "@shared/constants/error.constants";
 import { ApiError } from "@shared/errors/apiError";
 import jwt, {
@@ -22,7 +22,10 @@ function parseExpiresToSeconds(value: string | number): number {
   if (/^\d+$/.test(value)) return Number(value);
   const millis = ms(value as MsStringValue);
   if (typeof millis !== "number") {
-    throw new Error(`Invalid EXPIRES_IN value: '${value}'`);
+    throw ApiError.badRequest(
+      `Invalid EXPIRES_IN value: '${value}'`,
+      ERR.COMMON.INVALID_PAYLOAD
+    );
   }
   return Math.floor(millis / 1000);
 }
@@ -110,7 +113,7 @@ export function verifyRefreshToken(token: string): RefreshJwtPayload {
 }
 
 /* Para usar en debug/tests */
-export function decodeToken<T = StdJwtPayload>(token: string): T | null {
+export function decodeTokenStd(token: string): StdJwtPayload | null {
   const d = jwt.decode(token);
-  return d && typeof d !== "string" ? (d as T) : null;
+  return d && typeof d !== "string" ? d : null;
 }

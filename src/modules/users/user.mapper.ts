@@ -10,6 +10,7 @@ export function toPublicUser(doc: UserDocument): PublicUser {
     id: doc.id,
     email: doc.email,
     role: doc.role,
+    companyId: doc.companyId ?? null,
     username: doc.username,
     displayName: doc.displayName,
     avatarUrl: doc.avatarUrl,

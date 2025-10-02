@@ -35,6 +35,7 @@ const userSchema = new Schema<UserProps, IUserModel, IUserMethods>(
     avatarUrl: { type: String },
     avatarPublicId: { type: String },
     refreshTokenHash: { type: String, default: null, select: false },
+    companyId: { type: String, default: null, index: true },
   },
   {
     timestamps: true,
@@ -53,6 +54,9 @@ const userSchema = new Schema<UserProps, IUserModel, IUserMethods>(
 
 userSchema.index({ usernameLower: 1 }, { unique: true });
 userSchema.index({ displayName: 1, createdAt: -1 });
+
+userSchema.index({ role: 1, companyId: 1, usernameLower: 1 });
+userSchema.index({ role: 1, companyId: 1, email: 1 });
 
 userSchema.pre("validate", function (this: UserDocument, next) {
   if (this.isModified("username")) {
@@ -77,12 +81,17 @@ userSchema.pre("save", async function (this: UserDocument, next) {
 userSchema.method(
   "comparePassword",
   function (this: UserDocument, plain: string) {
+    if (!this.password) {
+      throw ApiError.badRequest("password error", ERR.AUTH.PASSWORD_ERROR);
+    }
     return bcrypt.compare(plain, this.password);
   }
 );
 
-userSchema.static("findByEmail", function (email: string) {
-  return this.findOne({ email: email.toLowerCase().trim() });
+userSchema.static("findByEmailForAuth", function (email: string) {
+  return this.findOne({ email: email.toLowerCase().trim() }).select(
+    "+password"
+  );
 });
 
 userSchema.static("findByUsername", function (username: string) {

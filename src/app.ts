@@ -1,18 +1,35 @@
-import cookieParser from "cookie-parser";
-import cors, { type CorsOptions } from "cors";
-import express, { type Application } from "express";
-import rateLimit from "express-rate-limit";
+import express, {
+  type Application,
+  type Request,
+  type Response,
+} from "express";
 import helmet from "helmet";
+import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
+import cors, { type CorsOptions } from "cors";
+import authRoutes from "@modules/auth/auth.routes";
+import userRoutes from "@modules/users/user.routes";
+import companyRoutes from "@modules/company/company.routes";
+import {
+  managerInvitationAdminRouter,
+  managerInvitationPublicRouter,
+} from "@modules/invitations/invitation.routes";
+import userOverviewRoutes from "@modules/overviews/routes/user.overview.routes";
+import managerOverviewRoutes from "@modules/overviews/routes/manager.overview.routes";
+import managerWorkersRoutes from "@modules/overviews/routes/manager.worker.routes";
+
+import { requireAuth } from "@middlewares/requireAuth.middleware";
+import { requireRole } from "@middlewares/requireRole.middleware";
+import ticketRoutes from "@modules/tickets/ticket.routes";
+import vehicleRoutes from "@modules/vehicles/vehicle.routes";
 
 const app: Application = express();
+
 app.set("trust proxy", 1);
 app.use(helmet());
 
 const allowlist = new Set<string>(
-  [
-    "http://localhost:5173",
-    process.env.CORS_ORIGIN, //en esa variable irá la url que nos de, por ejemplo, Vercel
-  ].filter(Boolean) as string[]
+  ["http://localhost:5173", process.env.CORS_ORIGIN].filter(Boolean) as string[]
 );
 
 const corsOptions: CorsOptions = {
@@ -24,13 +41,11 @@ const corsOptions: CorsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
 
-app.use(express.json({ limit: "1mb" }));
+app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
-//Para limitar peticiones (por ejemplo, máximo 100 por una misma ip)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
@@ -39,8 +54,41 @@ const authLimiter = rateLimit({
   message: { error: "Too many requests. Try again later." },
 });
 
-app.use("/auth", authLimiter); //hay que poner el limitador para que funcione
+app.use("/auth", authLimiter);
 
-app.get("/ready", (_req, res) => res.status(200).json({ ready: true })); //Healthcheck (curl -i http://localhost:3000/)
+app.get("/ready", (_req, res) => res.status(200).json({ ready: true }));
+app.get("/health", (_req, res) => res.status(200).json({ ok: true }));
+
+app.use("/auth", authRoutes);
+
+app.use("/users", requireAuth, userRoutes);
+
+app.use("/vehicles", vehicleRoutes);
+
+app.use("/companies", requireAuth, companyRoutes);
+
+app.use("/tickets", requireAuth, ticketRoutes);
+
+app.use("/overviews", requireAuth, userOverviewRoutes);
+app.use(
+  "/overviews",
+  requireAuth,
+  requireRole("manager"),
+  managerOverviewRoutes
+);
+app.use("/manager", requireAuth, requireRole("manager"), managerWorkersRoutes);
+
+app.use(
+  "/admin",
+  requireAuth,
+  requireRole("admin"),
+  managerInvitationAdminRouter
+);
+
+app.use(managerInvitationPublicRouter);
+
+app.use((_req: Request, res: Response) => {
+  res.status(404).json({ message: "Not found" });
+});
 
 export default app;

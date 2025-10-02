@@ -8,6 +8,8 @@ export const registerSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
   username: usernameSchema,
+  companyId: z.string().trim().optional(),
+  invitationToken: z.string().trim().optional(), 
 });
 export type RegisterInput = z.infer<typeof registerSchema>;
 

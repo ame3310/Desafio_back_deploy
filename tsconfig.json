@@ -10,7 +10,9 @@
       "@config/*": ["config/*"],
       "@middlewares/*": ["middlewares/*"],
       "@utils/*": ["utils/*"],
-      "@read-models/*": ["read-models/*"]
+      "@read-models/*": ["read-models/*"],
+      "@lib/*": ["lib/*"],
+      "@jobs/*": ["jobs/*"]
     },
     "target": "ES2022",
     "module": "node16",

@@ -1,21 +1,19 @@
-import app from "./app";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
+import app from "./app";
+import { env } from "@config/env";  
 
-dotenv.config();
+async function main() {
+  try {
+    await mongoose.connect(env.MONGO_URI);
+    console.log("MongoDB connected");
 
-const PORT = process.env.PORT || 3000;
-const MONGO_URI =
-  process.env.MONGO_URI || "mongodb://mongo:27017/socialnetwork";
-
-mongoose
-  .connect(MONGO_URI)
-  .then(() => {
-    console.log("Conectado a MongoDB");
-    app.listen(PORT, () => {
-      console.log(`Servidor escuchando en http://localhost:${PORT}`);
+    app.listen(env.PORT, () => {
+      console.log(`Server running on http://localhost:${env.PORT}`);
     });
-  })
-  .catch((err: unknown) => {
-    console.error("Error al conectar a MongoDB:", err);
-  });
+  } catch (err) {
+    console.error("Mongo connection error:", err);
+    process.exit(1);
+  }
+}
+
+main();

@@ -2,17 +2,25 @@
   "name": "finalprojectback",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "private": true,
+  "type": "commonjs",
   "scripts": {
-    "dev": "nodemon src/server.js",
-    "start": "node dist/server.js",
-    "test": "añadir comando"
+    "backfill": "ts-node --transpile-only src/read-models/scripts/backfill-overview.ts",
+    "fix:numbers": "ts-node -r tsconfig-paths/register --transpile-only src/read-models/scripts/fix-ticket-numbers.ts",
+    "build": "tsc -p tsconfig.json",
+    "prestart": "npm run build",
+    "start": "node -r tsconfig-paths/register dist/server.js",
+    "dev": "tsx watch src/server.ts",
+    "test": "echo \"add tests\" && exit 0"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
+    "@types/multer": "^2.0.0",
     "bcryptjs": "^3.0.2",
+    "bullmq": "^5.58.9",
+    "cloudinary": "^2.7.0",
+    "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
     "cross-env": "^10.0.0",
     "dotenv": "^17.2.2",
     "env": "^0.0.2",
@@ -24,7 +32,8 @@
     "mongodb": "^6.20.0",
     "mongodb-memory-server": "^10.2.1",
     "mongoose": "^8.18.2",
-    "node": "^24.8.0",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
     "zod": "^4.1.11"
   },
   "devDependencies": {
@@ -32,9 +41,13 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
     "@types/ms": "^2.1.0",
-    "@types/node": "^24.5.2",
+    "@types/node": "^24.6.2",
     "nodemon": "^3.1.10",
-    "typescript": "^5.9.2"
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
   }
 }

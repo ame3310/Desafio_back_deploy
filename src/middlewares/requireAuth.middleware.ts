@@ -1,12 +1,9 @@
-import { RequestHandler } from "express";
-import { extractUserFromAuthHeader } from "@utils/auth";
-import { ApiError } from "@shared/errors/apiError";
+import type { RequestHandler } from "express";
+import { authenticateRequest } from "@modules/auth/auth.service";
 
-export const requireAuth: RequestHandler = (req, _res, next) => {
+export const requireAuth: RequestHandler = async (req, _res, next) => {
   try {
-    const user = extractUserFromAuthHeader(req);
-    if (!user) throw ApiError.unauthorized();
-    req.user = user;
+    req.user = await authenticateRequest(req);
     next();
   } catch (err) {
     next(err);

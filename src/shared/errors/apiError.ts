@@ -84,4 +84,19 @@ export class ApiError extends Error {
       headers
     );
   }
+
+    static ocr(
+    message = "Prohibido",
+    code?: ErrorCode,
+    details?: unknown,
+    headers?: Record<string, string>
+  ) {
+    return new ApiError(
+      message,
+      403,
+      code ?? ERR.COMMON.FORBIDDEN,
+      details,
+      headers
+    );
+  }
 }

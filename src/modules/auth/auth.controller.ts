@@ -5,7 +5,7 @@ import {
   getRefreshCookieOptions,
 } from "@shared/constants/auth.constants";
 import { ApiError } from "@shared/errors/apiError";
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 
 function getRequestMeta(req: Request) {
   return {
@@ -20,12 +20,15 @@ export const register = async (
   next: NextFunction
 ) => {
   try {
-    const { email, password, username } = registerSchema.parse(req.body);
+    const { email, password, username, companyId, invitationToken } =
+      registerSchema.parse(req.body);
+
     const { user, accessToken, refreshToken } = await authService.register(
       email,
       password,
       username,
-      { userAgent: req.get("user-agent") ?? undefined, ip: req.ip }
+      getRequestMeta(req),
+      { companyId, invitationToken } 
     );
 
     res.cookie(REFRESH_COOKIE_NAME, refreshToken, getRefreshCookieOptions());
@@ -90,6 +93,7 @@ export const logout = async (
     const cookieToken = req.cookies?.[REFRESH_COOKIE_NAME];
 
     await authService.logout(userId, cookieToken);
+
     res.clearCookie(REFRESH_COOKIE_NAME, getRefreshCookieOptions());
     res.status(204).send();
   } catch (err) {
