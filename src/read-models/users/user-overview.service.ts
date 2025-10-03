@@ -1,4 +1,3 @@
-// src/read-models/users/user-overview.service.ts
 import { Types } from "mongoose";
 import { UserOverview } from "@read-models/users/user-overview.model";
 import { Vehicle } from "@modules/vehicles/vehicle.model";
@@ -35,7 +34,7 @@ function parseMonthRef(m?: string): Date {
 
 function ytdKeysFrom(monthRef: Date): string[] {
   const y = monthRef.getFullYear();
-  const upto = monthRef.getMonth(); // 0..11
+  const upto = monthRef.getMonth(); 
   const keys: string[] = [];
   for (let i = 0; i <= upto; i++) {
     const mm = String(i + 1).padStart(2, "0");
@@ -44,7 +43,7 @@ function ytdKeysFrom(monthRef: Date): string[] {
   return keys;
 }
 
-// === Vehículo activo asignado al usuario (según tu modelo real) ===
+
 async function getUserVehicle(companyId: Types.ObjectId, userId: Types.ObjectId) {
   const v = await Vehicle.findOne({
     companyId,
@@ -70,24 +69,17 @@ async function getUserVehicle(companyId: Types.ObjectId, userId: Types.ObjectId)
   };
 }
 
-/**
- * Overview de usuario:
- * - month (YYYY-MM)
- * - totalsMonth / ticketsMonth del mes
- * - totalsYtd / ticketsYtd del año del mes
- * - vehicle (si pertenece a empresa y tiene vehículo activo asignado)
- */
+
 export async function getUserOverviewRM(args: {
   companyId: string | null;
   userId: string;
-  month?: string; // "YYYY-MM" opcional
+  month?: string;
 }) {
   const { companyId, userId, month } = args;
 
   const ref = parseMonthRef(month);
   const monthKey = ym(ref);
 
-  // Usuario sin empresa → estructura base
   if (!companyId) {
     return {
       month: monthKey,
@@ -103,7 +95,6 @@ export async function getUserOverviewRM(args: {
   const user = new Types.ObjectId(userId);
   const ytdKeys = ytdKeysFrom(ref);
 
-  // Mes solicitado
   const thisMonth = await UserOverview.findOne({
     companyId: company,
     userId: user,
@@ -112,7 +103,6 @@ export async function getUserOverviewRM(args: {
     .select({ yearMonth: 1, totals: 1, counts: 1, updatedAt: 1 })
     .lean<UserRMLean | null>();
 
-  // YTD del año del mes solicitado
   const ytdAgg = await UserOverview.aggregate([
     { $match: { companyId: company, userId: user, yearMonth: { $in: ytdKeys } } },
     {
@@ -139,7 +129,6 @@ export async function getUserOverviewRM(args: {
 
   const ticketsYtd = ytdAgg[0]?.tickets ?? 0;
 
-  // Vehículo (si lo hay)
   const vehicle = await getUserVehicle(company, user);
 
   return {

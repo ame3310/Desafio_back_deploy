@@ -19,7 +19,6 @@ function zodValidate(schema: any) {
 
 const r = Router();
 
-// crear vehículo (manager o admin)
 r.post(
   "/",
   requireAuth,

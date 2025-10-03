@@ -1,7 +1,6 @@
 import "dotenv/config";
 import mongoose, { Types } from "mongoose";
 
-// 👇 RUTAS RELATIVAS (desde src/read-models/scripts)
 import { Ticket } from "../../modules/tickets/ticket.model";
 import { UserOverview } from "../users/user-overview.model";
 import { ManagerOverview } from "../managers/manager-overview.model";
@@ -11,7 +10,12 @@ import {
   EvTicketProps,
 } from "../../modules/tickets/ticket.types";
 
-type Totals = { fuel: number; electric: number; tolls: number; grandTotal: number };
+type Totals = {
+  fuel: number;
+  electric: number;
+  tolls: number;
+  grandTotal: number;
+};
 type Counts = { tickets: number };
 
 function ym(d: Date) {
@@ -21,7 +25,8 @@ function ym(d: Date) {
 }
 function firstDay(month: string): Date {
   const [y, mm] = month.split("-").map(Number);
-  if (!y || !mm || mm < 1 || mm > 12) throw new Error(`month inválido: ${month}`);
+  if (!y || !mm || mm < 1 || mm > 12)
+    throw new Error(`month inválido: ${month}`);
   return new Date(y, mm - 1, 1);
 }
 function nextMonth(d: Date): Date {
@@ -40,18 +45,23 @@ function monthsBetweenInclusive(from: string, to: string): string[] {
   return out;
 }
 
-// type guards
-function isFuel(t: TicketProps): t is FuelTicketProps { return t.domain === "combustible"; }
-function isEv(t: TicketProps): t is EvTicketProps { return t.domain === "ev"; }
+function isFuel(t: TicketProps): t is FuelTicketProps {
+  return t.domain === "combustible";
+}
+function isEv(t: TicketProps): t is EvTicketProps {
+  return t.domain === "ev";
+}
 
-// cálculo importe sin any
 function amountFromTicket(t: TicketProps): number {
   if (t.domain === "peaje") return t.importe ?? 0;
 
   if (isFuel(t)) {
     const l0 = t.lineas?.[0];
     if (typeof l0?.importe === "number") return l0.importe;
-    if (typeof l0?.litros === "number" && typeof l0?.precioPorLitro === "number") {
+    if (
+      typeof l0?.litros === "number" &&
+      typeof l0?.precioPorLitro === "number"
+    ) {
       return l0.litros * l0.precioPorLitro;
     }
     return t.total ?? 0;
@@ -75,12 +85,20 @@ async function backfillCompanyMonth(companyId: Types.ObjectId, month: string) {
   const yearMonth = ym(from);
 
   const tickets = await Ticket.find({
-    companyId, fecha: { $gte: from, $lt: to },
-  }).lean<TicketProps[]>().exec();
+    companyId,
+    fecha: { $gte: from, $lt: to },
+  })
+    .lean<TicketProps[]>()
+    .exec();
 
   type PerUser = Record<string, { totals: Totals; counts: Counts }>;
   const perUser: PerUser = {};
-  const companyTotals: Totals = { fuel: 0, electric: 0, tolls: 0, grandTotal: 0 };
+  const companyTotals: Totals = {
+    fuel: 0,
+    electric: 0,
+    tolls: 0,
+    grandTotal: 0,
+  };
   const perUserTotalForRank: Record<string, number> = {};
 
   for (const t of tickets) {
@@ -96,9 +114,16 @@ async function backfillCompanyMonth(companyId: Types.ObjectId, month: string) {
     const u = perUser[userKey];
     u.counts.tickets += 1;
 
-    if (t.domain === "combustible") { u.totals.fuel += amt; companyTotals.fuel += amt; }
-    else if (t.domain === "ev") { u.totals.electric += amt; companyTotals.electric += amt; }
-    else if (t.domain === "peaje") { u.totals.tolls += amt; companyTotals.tolls += amt; }
+    if (t.domain === "combustible") {
+      u.totals.fuel += amt;
+      companyTotals.fuel += amt;
+    } else if (t.domain === "ev") {
+      u.totals.electric += amt;
+      companyTotals.electric += amt;
+    } else if (t.domain === "peaje") {
+      u.totals.tolls += amt;
+      companyTotals.tolls += amt;
+    }
 
     u.totals.grandTotal = u.totals.fuel + u.totals.electric + u.totals.tolls;
     perUserTotalForRank[userKey] = (perUserTotalForRank[userKey] ?? 0) + amt;
@@ -107,20 +132,26 @@ async function backfillCompanyMonth(companyId: Types.ObjectId, month: string) {
   companyTotals.grandTotal =
     companyTotals.fuel + companyTotals.electric + companyTotals.tolls;
 
-  // UserOverview (mes exacto)
   const ops = Object.entries(perUser).map(([userId, data]) => ({
     updateOne: {
       filter: { companyId, userId: new Types.ObjectId(userId), yearMonth },
       update: {
-        $setOnInsert: { companyId, userId: new Types.ObjectId(userId), yearMonth },
-        $set: { totals: data.totals, counts: data.counts, updatedAt: new Date() },
+        $setOnInsert: {
+          companyId,
+          userId: new Types.ObjectId(userId),
+          yearMonth,
+        },
+        $set: {
+          totals: data.totals,
+          counts: data.counts,
+          updatedAt: new Date(),
+        },
       },
       upsert: true,
     },
   }));
   if (ops.length) await UserOverview.bulkWrite(ops);
 
-  // ManagerOverview (mes)
   const breakdownByType = [
     { type: "fuel" as const, total: companyTotals.fuel },
     { type: "electric" as const, total: companyTotals.electric },
@@ -134,7 +165,12 @@ async function backfillCompanyMonth(companyId: Types.ObjectId, month: string) {
     { companyId, yearMonth },
     {
       $setOnInsert: { companyId, yearMonth },
-      $set: { totals: companyTotals, breakdownByType, rankingUsers, updatedAt: new Date() },
+      $set: {
+        totals: companyTotals,
+        breakdownByType,
+        rankingUsers,
+        updatedAt: new Date(),
+      },
     },
     { upsert: true }
   );
@@ -181,12 +217,13 @@ async function run(companyIdStr: string, periodArg: string) {
   await mongoose.disconnect();
 }
 
-// CLI
 (async () => {
   const companyId = process.argv[2];
   const period = process.argv[3];
   if (!companyId || !period) {
-    console.error('Uso: npm run backfill -- <companyId> <YYYY-MM | YYYY-MM..YYYY-MM | YYYY | ytd>');
+    console.error(
+      "Uso: npm run backfill -- <companyId> <YYYY-MM | YYYY-MM..YYYY-MM | YYYY | ytd>"
+    );
     process.exit(1);
   }
   run(companyId, period)

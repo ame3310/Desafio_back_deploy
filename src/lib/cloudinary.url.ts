@@ -1,14 +1,11 @@
-// src/lib/cloudinary.url.ts
-const CLOUD = process.env.CLOUDINARY_CLOUD_NAME!; // ej.: "djj0p2tq2"
+const CLOUD = process.env.CLOUDINARY_CLOUD_NAME!; 
 
 export function cld(publicId?: string, transform = ""): string | undefined {
   if (!publicId) return undefined;
-  // Nota: no añadimos extensión; usamos f_auto para que Cloudinary elija formato óptimo
   const t = transform ? `${transform.replace(/\/$/, "")}/` : "";
   return `https://res.cloudinary.com/${CLOUD}/image/upload/${t}${publicId}`;
 }
 
-// Presets útiles:
 export const cldThumb = (id?: string) =>
   cld(id, "w_160,h_160,c_thumb,g_center,f_auto,q_auto");
 

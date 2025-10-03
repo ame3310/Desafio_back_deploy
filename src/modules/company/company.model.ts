@@ -19,7 +19,7 @@ const schema = new Schema<CompanyProps>(
       lowercase: true,
       trim: true,
     },
-    externalId: { type: String, default: null, index: true }, // por lo del "EMP001" (borrar tras llegar a acuerdo)
+    externalId: { type: String, default: null, index: true }, 
     status: {
       type: String,
       enum: ["pending", "active", "suspended"],

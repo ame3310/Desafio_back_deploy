@@ -3,7 +3,7 @@ import { Schema, model, Types } from "mongoose";
 export interface UserOverviewRM {
   companyId: Types.ObjectId;
   userId: Types.ObjectId;
-  yearMonth: string; // "YYYY-MM"
+  yearMonth: string; 
   totals: { fuel: number; tolls: number; electric: number; grandTotal: number };
   counts: { tickets: number };
   updatedAt: Date;

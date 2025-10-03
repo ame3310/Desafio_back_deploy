@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { Ticket } from "@modules/tickets/ticket.model";
 
 async function run(label: string, filter: any) {
-  // updateMany con pipeline para castear a Double
+
   const res = await Ticket.collection.updateMany(
     filter,
     [{ $set: { [label]: { $toDouble: `$${label}` } } }]
@@ -18,12 +18,10 @@ async function main() {
 
   await mongoose.connect(uri, dbName ? { dbName } : undefined);
 
-  // total -> double
   await run("total",   { total: { $type: "string" } });
   await run("total",   { total: { $type: "int" } });
   await run("total",   { total: { $type: "long" } });
 
-  // importe -> double (sólo peajes si lo usas)
   await run("importe", { importe: { $type: "string" } });
   await run("importe", { importe: { $type: "int" } });
   await run("importe", { importe: { $type: "long" } });

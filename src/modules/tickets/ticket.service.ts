@@ -15,7 +15,6 @@ import {
   cloudinaryConfigured,
 } from "@lib/cloudinary.client";
 
-// Proyector: mantiene los read-models al crear un ticket
 import { onTicketCreated } from "@read-models/projector/rm-projector";
 
 type UserCtx = { id: string; companyId: string | null };
@@ -48,8 +47,9 @@ async function getEmpresaNombre(
   return c?.name ? normalizeEmpresaNombre(c.name) : null;
 }
 
-/** ===== helpers de amount (sin any) ===== */
-function amountFromFuel(patch: ReturnType<typeof mapFuelToTicketPatch>): number {
+function amountFromFuel(
+  patch: ReturnType<typeof mapFuelToTicketPatch>
+): number {
   const l = patch.lineas?.[0];
   if (typeof l?.importe === "number") return l.importe;
   if (typeof l?.litros === "number" && typeof l?.precioPorLitro === "number") {
@@ -65,11 +65,12 @@ function amountFromEv(patch: ReturnType<typeof mapEvToTicketPatch>): number {
   }
   return patch.total ?? 0;
 }
-function amountFromToll(patch: ReturnType<typeof mapTollToTicketPatch>): number {
+function amountFromToll(
+  patch: ReturnType<typeof mapTollToTicketPatch>
+): number {
   return patch.importe ?? 0;
 }
 
-/** ===== GASOLINERAS (fuel/ev) ===== */
 export async function createFromGasolineras(args: CreateArgs) {
   const { file, fecha, user } = args;
 
@@ -117,7 +118,7 @@ export async function createFromGasolineras(args: CreateArgs) {
 
   const empresaNombre = await getEmpresaNombre(user.companyId);
 
-  const kind = detectFuelOrEvFromOcr(ocr); // "fuel" | "ev"
+  const kind = detectFuelOrEvFromOcr(ocr);
   if (kind === "ev") {
     const patch = mapEvToTicketPatch(ocr, ctx);
     const doc = await Ticket.create({
@@ -163,7 +164,6 @@ export async function createFromGasolineras(args: CreateArgs) {
   }
 }
 
-/** ===== PEAJE ===== */
 export async function createFromPeaje(args: CreateArgs) {
   const { file, fecha, user } = args;
 
