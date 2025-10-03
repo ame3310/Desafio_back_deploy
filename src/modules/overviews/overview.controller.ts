@@ -1,4 +1,3 @@
-// src/overviews/overview.controller.ts
 import { Request, Response, NextFunction } from "express";
 import { getManagerOverviewRM } from "@read-models/managers/manager-overview.service";
 import { getUserOverviewRM } from "@read-models/users/user-overview.service";
@@ -13,7 +12,6 @@ export async function getManagerOverviewCtrl(
     if (!companyId)
       return res.status(400).json({ error: "MANAGER_WITHOUT_COMPANY" });
 
-    // opcionales: month=YYYY-MM, top=<n>
     const month =
       typeof req.query.month === "string" ? req.query.month : undefined;
     const top =
@@ -39,10 +37,9 @@ export async function getSelfUserOverviewCtrl(
   next: NextFunction
 ) {
   try {
-    const companyId = req.user?.companyId ?? null; // puede ser null
+    const companyId = req.user?.companyId ?? null; 
     const userId = req.user!.id;
 
-    // opcional: month=YYYY-MM
     const month =
       typeof req.query.month === "string" ? req.query.month : undefined;
 
@@ -64,14 +61,12 @@ export async function getWorkerOverviewCtrl(
   next: NextFunction
 ) {
   try {
-    // manager viendo a un trabajador concreto
     const companyId = req.user?.companyId;
     if (!companyId)
       return res.status(400).json({ error: "MANAGER_WITHOUT_COMPANY" });
 
     const userId = String(req.params.userId);
 
-    // opcional: month=YYYY-MM
     const month =
       typeof req.query.month === "string" ? req.query.month : undefined;
 

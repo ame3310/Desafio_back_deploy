@@ -1,4 +1,3 @@
-// src/modules/overviews/routes/manager.worker.routes.ts
 import { Router } from "express";
 import { z } from "zod";
 import { requireAuth } from "@middlewares/requireAuth.middleware";
@@ -20,18 +19,6 @@ type WorkerItem = {
 
 type LastImgAgg = { _id: Types.ObjectId; publicId?: string };
 
-/**
- * Móntalo como:
- *   app.use("/manager", requireAuth, requireRole("manager"), managerWorkersRoutes);
- *
- * Endpoints resultantes:
- *   GET /manager/workers
- *   GET /manager/workers/:userId/tickets?month=YYYY-MM&page=1&limit=20&domain=peaje|combustible|ev
- */
-
-/* =========================
- * 1) Listado de trabajadores
- * ========================= */
 r.get(
   "/workers",
   requireAuth,
@@ -47,7 +34,7 @@ r.get(
           q: z.string().optional(),
           page: z.coerce.number().int().min(1).default(1),
           limit: z.coerce.number().int().min(1).max(100).default(20),
-          include: z.string().optional(), // "thumbnail"
+          include: z.string().optional(), 
         })
         .parse(req.query);
 
@@ -77,7 +64,6 @@ r.get(
         email: u.email,
       }));
 
-      // Miniatura de la última imagen por trabajador (si se pide)
       if (include.has("thumbnail") && items.length) {
         const userObjIds = items.map((x) => new Types.ObjectId(x.userId));
         const lastImgs = await Ticket.aggregate<LastImgAgg>([
@@ -109,10 +95,6 @@ r.get(
   }
 );
 
-/* ==========================================
- * 2) Tickets de un trabajador (vista manager)
- *    GET /manager/workers/:userId/tickets?month=YYYY-MM&page=&limit=&domain=
- * ========================================== */
 r.get(
   "/workers/:userId/tickets",
   requireAuth,
@@ -129,7 +111,7 @@ r.get(
           month: z
             .string()
             .regex(/^\d{4}-\d{2}$/)
-            .optional(), // YYYY-MM
+            .optional(), 
           page: z.coerce.number().int().min(1).default(1),
           limit: z.coerce.number().int().min(1).max(100).default(20),
           domain: z.enum(["combustible", "ev", "peaje"]).optional(),
@@ -139,7 +121,6 @@ r.get(
       const companyObj = new Types.ObjectId(String(companyId));
       const userObj = new Types.ObjectId(params.userId);
 
-      // Seguridad: el trabajador debe pertenecer a la empresa del manager
       const exists = await User.exists({
         _id: userObj,
         companyId: companyObj,
@@ -148,7 +129,6 @@ r.get(
       if (!exists)
         return res.status(404).json({ error: "WORKER_NOT_FOUND_IN_COMPANY" });
 
-      // Filtro de búsqueda
       const find: Record<string, unknown> = {
         companyId: companyObj,
         userId: userObj,
@@ -174,7 +154,6 @@ r.get(
         Ticket.countDocuments(find),
       ]);
 
-      // Mapear respuesta para UI: amount correcto + urls de imagen
       const items = docs.map((t) => {
         const amount =
           t.domain === "peaje"

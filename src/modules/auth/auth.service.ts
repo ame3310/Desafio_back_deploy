@@ -143,7 +143,6 @@ export async function register(
     companyId, 
   });
 
-  // mantener relación manager<->company
   if (role === "manager" && companyId) {
     await Company.findByIdAndUpdate(companyId, {
       $addToSet: { managerIds: user.id },

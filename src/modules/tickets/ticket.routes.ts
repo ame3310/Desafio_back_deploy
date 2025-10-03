@@ -3,14 +3,12 @@ import { requireAuth } from "@middlewares/requireAuth.middleware";
 import { uploadTicketFile } from "@lib/multer";
 import * as ctrl from "@modules/tickets/ticket.controller";
 
-// lectura
 import { Ticket } from "@modules/tickets/ticket.model";
 import { cldThumb, cldLarge } from "@lib/cloudinary.url";
 import { Types } from "mongoose";
 
 const r = Router();
 
-/* --------------------------------- CREATE -------------------------------- */
 
 r.post(
   "/gasolineras",
@@ -34,7 +32,6 @@ r.post(
   ctrl.createFromPeaje
 );
 
-/* ---------------------------------- READ --------------------------------- */
 
 type Domain = "combustible" | "ev" | "peaje";
 
@@ -55,9 +52,6 @@ type TicketLean = {
   provincia?: string;
 };
 
-/**
- * GET /tickets/me?page=&limit=&from=&to=&domain=
- */
 r.get("/me", requireAuth, async (req, res, next) => {
   try {
     const userId = req.user!.id;
@@ -110,9 +104,6 @@ r.get("/me", requireAuth, async (req, res, next) => {
   }
 });
 
-/**
- * GET /tickets/:id
- */
 r.get("/:id", requireAuth, async (req, res, next) => {
   try {
     const t = await Ticket.findOne({ _id: req.params.id, userId: req.user!.id })
